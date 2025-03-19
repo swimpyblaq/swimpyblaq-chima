@@ -3,7 +3,7 @@ name: Java CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Runs on push to main branch
+      - main  # Runs on push to the main branch
   pull_request:
     branches:
       - main
@@ -41,13 +41,14 @@ jobs:
           name: java-app
           path: target
 
-      - name: Deploy to Server
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          echo "$SSH_KEY" > private_key && chmod 600 private_key
-          scp -i private_key target/*.jar $SSH_USER@$SSH_HOST:/home/$SSH_USER/app.jar
-          ssh -i private_key $SSH_USER@$SSH_HOST "nohup java -jar /home/$SSH_USER/app.jar > output.log 2>&1 &"
-
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.SSH_USER }}/app  # Ensure correct deployment directory
+            rm -f app.jar
+            mv ~/target/*.jar app.jar
+            nohup java -jar app.jar > app.log 2>&1 &
