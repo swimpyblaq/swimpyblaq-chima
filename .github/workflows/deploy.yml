@@ -3,10 +3,10 @@ name: Java CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Runs on push to the main branch
+      - master  # Runs on push to the master branch
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build:
